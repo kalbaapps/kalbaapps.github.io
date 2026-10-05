@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>User Guide - Integration Reliability</title>
+<style>
+  :root { --bg:#fff; --text:#1c2430; --muted:#6b7686; --line:#e3e6eb; --card:#f6f7f9; --accent:#3b5bdb; --ok:#1a7f4b; --bad:#c62828; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#12161c; --text:#e6e9ee; --muted:#8c96a5; --line:#2a323d; --card:#1b212a; --accent:#8da2fb; --ok:#4cc38a; --bad:#ff6b6b; } }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.65 system-ui,sans-serif; }
+  main { max-width:780px; margin:0 auto; padding:24px 16px 80px; }
+  h1 { font-size:28px; margin:0 0 4px; } h2 { font-size:21px; margin:38px 0 8px; padding-top:8px; border-top:1px solid var(--line); } h3 { font-size:17px; margin:22px 0 4px; }
+  .muted { color:var(--muted); } a { color:var(--accent); }
+  code { background:var(--card); padding:1px 6px; border-radius:5px; font-size:.92em; }
+  pre { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; overflow-x:auto; font-size:14px; line-height:1.45; }
+  pre code { background:none; padding:0; }
+  .box { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin:14px 0; }
+  .ok { color:var(--ok); font-weight:600; } .bad { color:var(--bad); font-weight:600; }
+  table { border-collapse:collapse; width:100%; margin:12px 0; font-size:15px; } th,td { text-align:left; border-bottom:1px solid var(--line); padding:8px 8px; vertical-align:top; } th { color:var(--muted); font-weight:600; }
+  nav ul { columns:2; padding-left:18px; } nav li { margin:2px 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>Integration Reliability: User Guide</h1>
+<p class="muted">For people using the Android app and the web dashboard. Updated 5 October 2026.</p>
+
+<nav class="box"><strong>Contents</strong>
+<ul>
+  <li><a href="#what">What it does</a></li>
+  <li><a href="#demo">Try it with no setup</a></li>
+  <li><a href="#need">What you need</a></li>
+  <li><a href="#server">Step 1: run your server</a></li>
+  <li><a href="#reach">Step 2: let your phone reach it</a></li>
+  <li><a href="#connect">Step 3: connect the app</a></li>
+  <li><a href="#check">Step 4: add your first check</a></li>
+  <li><a href="#read">Reading the results</a></li>
+  <li><a href="#alerts">Alerts and reports</a></li>
+  <li><a href="#trouble">Troubleshooting</a></li>
+  <li><a href="#safe">Keeping it safe</a></li>
+  <li><a href="#help">Getting help</a></li>
+</ul></nav>
+
+<h2 id="what">What it does</h2>
+<p>Most monitoring tells you a website is "up". But systems can all say "OK" while the <em>data</em> is wrong: a salary reaches payroll rounded down, a new customer never reaches billing, a webhook stops being delivered. Nobody notices until someone complains.</p>
+<p>Integration Reliability runs small <strong>checks</strong> on a schedule. A check is a short story, for example: <em>"Create an employee in HR, then look in Payroll. The same person must be there with the same salary."</em> When the story stops being true you get an alert that says <strong>what</strong> went wrong and a <strong>likely cause</strong> in plain English.</p>
+<div class="box">There are two parts. The <strong>server</strong> runs the checks (free software you run yourself). The <strong>app</strong> on your phone shows the results and alerts you. The app does nothing on its own, so you need a server for real use.</div>
+
+<h2 id="demo">Try it with no setup</h2>
+<p>On the app's first screen tap <strong>Try the demo</strong>. You get the full app with sample data, and nothing is sent anywhere.</p>
+<ul>
+  <li><strong>Status</strong>: three sample checks, each with PASS or FAIL, uptime and a row of history bars. Tap <strong>Simulate a failure</strong> to make the fake integration fail.</li>
+  <li>The banner turns red, the first check shows the error (<code>monthlySalary: expected 125750, got 125000</code>) and a <strong>Likely cause</strong> box explains it.</li>
+  <li><strong>Incidents</strong>: the outage appears as <span class="bad">ONGOING</span>. Tap <strong>Fix the fake integration</strong> on Status and it becomes <span class="ok">RESOLVED</span> with how long it lasted.</li>
+  <li><strong>Add</strong>: paste any curl command and see how a check gets built. Settings shows the privacy policy and this guide.</li>
+</ul>
+
+<h2 id="need">What you need</h2>
+<ul>
+  <li>A computer (Windows, Mac or Linux) that can stay switched on, or a small cloud server.</li>
+  <li><strong>Node.js 20 or newer</strong> (free, from <a href="https://nodejs.org">nodejs.org</a>). Nothing else to install.</li>
+  <li>About 15 minutes the first time.</li>
+</ul>
+<p class="muted">No coding is needed, but you will type a few commands into a terminal (PowerShell on Windows, Terminal on Mac).</p>
+
+<h2 id="server">Step 1: run your server</h2>
+<ol>
+  <li>Get the server software. While the app is in <strong>early access</strong> the server is shared as a <strong>.zip download by request</strong> (see <a href="#help">Getting help</a> for how to ask). Unzip it somewhere you will keep it, for example your Documents folder.</li>
+  <li>Open a terminal in the unzipped folder.</li>
+  <li>Start it <strong>with a password</strong> (choose a long one):
+<pre><code># Windows PowerShell
+$env:APP_PASSWORD = 'choose-a-long-password'
+npm start
+
+# Mac / Linux
+APP_PASSWORD='choose-a-long-password' npm start</code></pre></li>
+  <li>Open <a href="http://localhost:3000">http://localhost:3000</a> in your browser. You should see the dashboard with one sample check. Click <strong>Sign in</strong> and type your password.</li>
+</ol>
+<div class="box"><strong>Without a password</strong> anyone who can reach your server can read the results, and editing only works from the same computer. Always set <code>APP_PASSWORD</code> if the server can be reached from outside.</div>
+<p>The sample check uses built-in fake systems, so it passes. You can remove it later. Results are saved in the <code>data</code> folder next to the program. Closing the terminal stops the server.</p>
+
+<h2 id="reach">Step 2: let your phone reach it</h2>
+<p>Your phone must be able to open your server's address. Which address works depends on the app version:</p>
+<table>
+<tr><th>Situation</th><th>What to enter in the app</th></tr>
+<tr><td><strong>Google Play version</strong> (needs a secure <code>https://</code> address)</td><td>An <code>https://</code> address. The easiest way is a free Cloudflare tunnel, below.</td></tr>
+<tr><td>Test/developer version on the same Wi-Fi</td><td><code>http://192.168.x.x:3000</code> (your computer's address from <code>ipconfig</code> or <code>ifconfig</code>).</td></tr>
+<tr><td>Android emulator</td><td><code>http://10.0.2.2:3000</code></td></tr>
+</table>
+<h3>A free secure address with Cloudflare Tunnel</h3>
+<ol>
+  <li>Install <code>cloudflared</code> (Windows: <code>winget install Cloudflare.cloudflared</code>; Mac: <code>brew install cloudflared</code>; other systems: see <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/">Cloudflare's download page</a>).</li>
+  <li>With your server running, in a second terminal run:
+<pre><code>cloudflared tunnel --url http://localhost:3000</code></pre></li>
+  <li>After a few seconds it prints an address ending in <code>trycloudflare.com</code>. That is your <code>https://</code> address.</li>
+</ol>
+<div class="box"><strong>Know the limits:</strong> this free address <strong>changes every time you restart the tunnel</strong>, and it only works while your computer, the server and the tunnel are all running. For something permanent, run the server on an always-on machine and give it a proper address of your own.</div>
+
+<h2 id="connect">Step 3: connect the app</h2>
+<ol>
+  <li>Open the app. On the first screen type your server's address (for example <code>https://something.trycloudflare.com</code>).</li>
+  <li>Type the password you chose, then tap <strong>Connect</strong>. Leave the password empty only if you want to look around as a read-only guest on a server that allows it.</li>
+  <li>You land on <strong>Status</strong>. Tap <strong>Run checks now</strong> to see the sample check pass.</li>
+</ol>
+<p>To use a different server later: <strong>Settings → Change server / sign out</strong>.</p>
+
+<h2 id="check">Step 4: add your first check</h2>
+<p>The quickest way is a <strong>curl command</strong>. These are the example commands you find in almost every API's documentation, in Postman ("Code snippet"), and in a browser (developer tools → Network → right-click a request → <em>Copy as cURL</em>).</p>
+<h3>In the app</h3>
+<ol>
+  <li>Open the <strong>Add</strong> tab (you must be signed in) and paste the command, for example <code>curl https://jsonplaceholder.typicode.com/todos/1</code>.</li>
+  <li>Tap <strong>Try it</strong>. The <em>server</em> calls the address once and shows the status it got. If the command contains an API key, the server stores it as a secret and hides it.</li>
+  <li>Below you may see values from the answer. <strong>Tick only values that should always stay the same</strong> (like an ID or a plan name). Do not tick times, random IDs or counters that change.</li>
+  <li>Tap <strong>Add this check</strong>. It now runs automatically.</li>
+</ol>
+<div class="box"><strong>Important:</strong> the address in the command is called by your <em>server</em>, not by your phone. It must work from the computer the server runs on.</div>
+<h3>On the web dashboard (more options)</h3>
+<p>Sign in at your server's address, click <strong>Add or change checks</strong>, then: <strong>1 Add a check</strong> (paste curl, or pick a template such as "HR → Payroll"), <strong>2 Your checks</strong> (use <strong>Test them</strong> to try without saving, then <strong>Save</strong>). Each check has a <strong>Runs</strong> menu (every minute up to every day). The editor also manages <strong>Secrets</strong> (API keys), <strong>Alerts</strong>, and an <strong>Advanced</strong> JSON view for multi-step checks.</p>
+<p>To remove a check in the app: <strong>Status</strong> → <strong>Remove this check</strong> under it (you are asked to confirm).</p>
+
+<h2 id="read">Reading the results</h2>
+<table>
+<tr><th>You see</th><th>It means</th></tr>
+<tr><td><span class="ok">PASS</span> / <span class="bad">FAIL</span></td><td>The latest run of that check passed or failed.</td></tr>
+<tr><td>Row of small bars</td><td>The last runs, oldest to newest. Green = passed, red = failed.</td></tr>
+<tr><td>"every 1m"</td><td>How often the check runs.</td></tr>
+<tr><td>"uptime 99.5% (7d)"</td><td>Share of runs that passed in the last 7 days.</td></tr>
+<tr><td>Red line under a failed check</td><td>The step that failed and exactly what was expected versus received.</td></tr>
+<tr><td><strong>Likely cause</strong> box</td><td>A plain-English guess and what to check first. It is a hint, not a diagnosis.</td></tr>
+<tr><td><strong>Incidents</strong> tab</td><td>Each outage from the moment a check started failing until it recovered. Two failing runs in a row are one incident.</td></tr>
+<tr><td>"Status (1)"</td><td>One check is failing right now.</td></tr>
+</table>
+
+<h2 id="alerts">Alerts and reports</h2>
+<h3>Phone alerts (the app)</h3>
+<p>Sign in, open <strong>Settings → Turn on phone alerts</strong> and allow notifications. Then tap <strong>Send a test alert</strong>. You get a notification when a check <strong>starts failing</strong> and again when it <strong>recovers</strong>, not on every failing run. Phone alerts work in the installed app on a real phone.</p>
+<h3>Email, chat and reports (set on the server)</h3>
+<p>Set these before <code>npm start</code> (same way as <code>APP_PASSWORD</code>), then check them under <strong>Alerts</strong> in the web editor with <strong>Send test alert</strong>:</p>
+<table>
+<tr><th>What</th><th>Setting</th></tr>
+<tr><td>Email through Brevo (works on networks that block mail ports)</td><td><code>BREVO_API_KEY</code>, <code>ALERT_EMAIL_FROM</code> (a sender verified in Brevo), <code>ALERT_EMAIL_TO</code></td></tr>
+<tr><td>Email through your own mail server</td><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>ALERT_EMAIL_TO</code></td></tr>
+<tr><td>Teams, Slack or Discord message</td><td><code>ALERT_WEBHOOK_URL</code> (an incoming-webhook address)</td></tr>
+<tr><td>Weekly report by email and chat</td><td><code>WEEKLY_DIGEST=1</code></td></tr>
+<tr><td>Public status page at <code>/status</code> (names, up/down and uptime only)</td><td><code>STATUS_PAGE=1</code></td></tr>
+<tr><td>Encrypt saved API keys on disk</td><td><code>SECRETS_KEY</code> (any long random text; keep it safe)</td></tr>
+</table>
+
+<h2 id="trouble">Troubleshooting</h2>
+<table>
+<tr><th>Message or problem</th><th>What to do</th></tr>
+<tr><td>"Cannot reach …"</td><td>The server is off, the address is wrong, or the phone is on another network. Open the same address in the phone's browser. For a tunnel address, check the tunnel is still running (it changes after a restart).</td></tr>
+<tr><td>"This version of the app only connects over HTTPS"</td><td>The Play Store version needs an address starting with <code>https://</code>. Use a Cloudflare tunnel (Step 2).</td></tr>
+<tr><td>"wrong password" / "too many attempts"</td><td>Retype the password you gave <code>APP_PASSWORD</code>. After 10 wrong tries, wait a minute.</td></tr>
+<tr><td>"Your sign-in expired"</td><td>The server was restarted. Sign in again under Settings.</td></tr>
+<tr><td>"Could not reach … no answer within 8 seconds" when adding a check</td><td>That address does not work from the <em>server's</em> computer (for example a phone-only address or <code>10.0.2.2</code>). Use one the server can open.</td></tr>
+<tr><td>A new check always fails</td><td>Open its address in a browser on the server's computer and compare. Placeholder addresses like <code>example.com</code> never work.</td></tr>
+<tr><td>No phone alert arrives</td><td>You must be signed in, alerts must be turned on in Settings, and the phone must be a real phone with the installed app. Use <strong>Send a test alert</strong> and read what it says.</td></tr>
+<tr><td>The status text says "Waiting for the first run"</td><td>Tap <strong>Run checks now</strong>, or wait up to a minute.</td></tr>
+<tr><td>History disappeared</td><td>The <code>data</code> folder was deleted, or the program was started from a different folder. Restore it from a backup (see "Keeping it safe").</td></tr>
+</table>
+
+<h2 id="safe">Keeping it safe</h2>
+<ul>
+  <li>Always set a long <code>APP_PASSWORD</code>. Anyone with your tunnel address can reach the sign-in page.</li>
+  <li>Never put API keys directly in a check. Paste a curl command and the server stores keys as secrets automatically, or add them under <strong>Secrets</strong> and use <code>{{secret.NAME}}</code>.</li>
+  <li><strong>Back up your data.</strong> Everything you save (checks, history, saved API keys) lives in the <code>data</code> folder next to the program. Copy that folder somewhere safe now and then. On Windows, <code>powershell -File scripts\backup.ps1</code> does it for you into <em>Documents\IntegrationReliability-backups</em>, and <code>scripts\restore-backup.ps1</code> puts it back. Keep any file that contains your passwords private.</li>
+  <li>Do not post screenshots that show your server address together with a password, or any key.</li>
+  <li>The app stores your server address and sign-in only on your phone. See the <a href="privacy.html">privacy policy</a>.</li>
+  <li>Check names are shown on the public status page when you switch it on. Do not put secrets in check names.</li>
+</ul>
+
+<h2 id="help">Getting help</h2>
+<p><strong>To request the server download, or to ask a question or report a problem,</strong> open an issue at <a href="https://github.com/kalbaapps/kalbaapps.github.io/issues">github.com/kalbaapps/kalbaapps.github.io/issues</a> (you need a free GitHub account). Say what you did, what you expected and what the app showed. Please do not paste passwords or keys.</p>
+</main>
+</body>
+</html>
+
